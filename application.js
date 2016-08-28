@@ -1,7 +1,8 @@
 'use strict';
 
-const _ = require('lodash');
 const commands = require('./commands');
+
+const _ = require('lodash');
 
 function MyriadKVClient(options) {
     this.options = _.defaults(options, {
@@ -15,3 +16,9 @@ function MyriadKVClient(options) {
 }
 
 module.exports = MyriadKVClient;
+
+// executed directly from command line, run the repl
+if (require.main === module) {
+    const MyriadRepl = require('./repl');
+    MyriadRepl.run();
+}

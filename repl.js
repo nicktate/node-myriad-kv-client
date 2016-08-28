@@ -8,8 +8,6 @@ const mc = new MyriadKV({
 
 const ANSI_RED = '\x1b[31m';
 const ANSI_GREEN = '\x1b[32m';
-const ANSI_YELLOW = '\x1b[33m';
-const ANSI_BLUE = '\x1b[34m';
 const ANSI_RESET = '\x1b[0m';
 const JSON_LINE_REGEX = /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/mg;
 
@@ -28,12 +26,14 @@ const COMMANDS = [
     'ttl '
 ];
 
-repl.start({
-    prompt: 'myriad-kv > ',
-    eval: evalFunction,
-    completer: completerFunction,
-    writer: writerFunction
-});
+function runRepl() {
+    return repl.start({
+        prompt: 'myriad-kv > ',
+        eval: evalFunction,
+        completer: completerFunction,
+        writer: writerFunction
+    });
+}
 
 function evalFunction(expression, context, filename, callback) {
     const split = expression.trim().split(/\s+/);
@@ -132,16 +132,6 @@ function keyCompleter(partial, callback) {
     });
 }
 
-function getFunction(arg, callback) {
-    if (!arg) {
-        return callback();
-    }
-
-    return mc.get(arg, (err, res) => {
-        return callback(null, err || res);
-    });
-}
-
 function writerFunction(output) {
     switch (typeof output) {
         case 'string':
@@ -176,7 +166,7 @@ function ansiJsonColorReplacer(match, pIndent, pKey, pVal, pEnd) {
     }
 
     if (pVal) {
-        if (pVal.startsWith("\"")) {
+        if (pVal.startsWith('"')) {
             result += util.format(`${ANSI_GREEN}%s${ANSI_RESET}`, pVal);
         } else {
             result += util.format(`${ANSI_RED}%s${ANSI_RESET}`, pVal);
@@ -208,6 +198,10 @@ function errorWrap(func) {
             });
         }
 
-        throw new Exception('One of the first three arguments must be a callback function');
-    }
+        throw new Error('One of the first three arguments must be a callback function');
+    };
 }
+
+module.exports = {
+    run: runRepl
+};
