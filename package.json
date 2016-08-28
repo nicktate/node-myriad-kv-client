@@ -24,9 +24,10 @@
   "homepage": "https://github.com/normanjoyner/node-myriad-kv-client",
   "dependencies": {
     "lodash": "^4.15.0",
-    "mocha": "^3.0.2"
+    "yargs": "^5.0.0"
   },
   "devDependencies": {
-    "eslint": "^3.4.0"
+    "eslint": "^3.4.0",
+    "mocha": "^3.0.2"
   }
 }

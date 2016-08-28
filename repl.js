@@ -1,9 +1,11 @@
 'use strict';
 
+const argv = require('./lib/config');
 const MyriadKV = require('./application');
+
 const mc = new MyriadKV({
-    host: '0.0.0.0',
-    port: 2666
+    host: argv.host,
+    port: argv.port
 });
 
 const ANSI_RED = '\x1b[31m';
@@ -27,11 +29,20 @@ const COMMANDS = [
 ];
 
 function runRepl() {
-    return repl.start({
-        prompt: 'myriad-kv > ',
-        eval: evalFunction,
-        completer: completerFunction,
-        writer: writerFunction
+    // run stat so we can test myriad connection
+    return mc.stat((err) => {
+        if (err) {
+            // eslint-disable-next-line no-console
+            console.error(err);
+            process.exit(1);
+        }
+
+        return repl.start({
+            prompt: 'myriad-kv > ',
+            eval: evalFunction,
+            completer: completerFunction,
+            writer: writerFunction
+        });
     });
 }
 
