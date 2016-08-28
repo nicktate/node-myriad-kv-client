@@ -15,6 +15,7 @@ module.exports = function(client) {
             entry = undefined;
         }
 
+        console.log('entry: ' + JSON.stringify(entry));
         if(_.isUndefined(entry) || !_.has(entry, 'key') || !_.has(entry, 'value')) {
             return fn(new errors.EINSUFFINFO());
         }

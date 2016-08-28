@@ -24,7 +24,7 @@ const COMMANDS = [
     'keys ',
     'set ',
     'snapshot ',
-    'stats ',
+    'stat ',
     'ttl '
 ];
 
@@ -43,11 +43,28 @@ function evalFunction(expression, context, filename, callback) {
     }
 
     const cmd = split[0];
-    const arg = split.length == 2 ? split[1] : null;
+    const arg = split.length > 1 ? split[1] : null;
 
     switch (cmd) {
+        case 'delete':
+            return errorWrap(mc.delete)(arg, callback);
+        case 'flush':
+            return errorWrap(mc.flush)(callback);
         case 'get':
-            return getFunction(arg, callback);
+            return errorWrap(mc.get)(arg, callback);
+        case 'keys':
+            return errorWrap(mc.keys)(arg, callback);
+        case 'set':
+            return errorWrap(mc.set)({
+                key: arg,
+                value: split.length === 3 ? split[2] : null
+            }, callback);
+        case 'snapshot':
+            return errorWrap(mc.snapshot)(callback);
+        case 'stat':
+            return errorWrap(mc.stat)(callback);
+        case 'ttl':
+            return errorWrap(mc.ttl)(arg, split.length === 3 ? split[2] : null, callback);
     }
 
     return callback();
@@ -74,13 +91,13 @@ function completerFunction(partial, callback) {
     }
 
     switch (cmd) {
-        case 'keys':
         case 'delete':
         case 'get':
+        case 'keys':
             return keyCompleter(partial, callback);
     }
 
-    return callback(null);
+    return callback(null, [[], partial]);
 }
 
 function keyCompleter(partial, callback) {
@@ -138,6 +155,14 @@ function writerFunction(output) {
             } catch (e) {
                 return util.inspect(output, true, 5, true);
             }
+        case 'object':
+            try {
+                output = JSON.stringify(output, null, 2);
+                output = output.replace(JSON_LINE_REGEX, ansiJsonColorReplacer);
+                return output;
+            } catch (e) {
+                return util.inspect(output, true, 5, true);
+            }
     }
 
     return util.inspect(output, true, 5, true);
@@ -161,4 +186,28 @@ function ansiJsonColorReplacer(match, pIndent, pKey, pVal, pEnd) {
     result += pEnd || '';
 
     return result;
+}
+
+function errorWrap(func) {
+    return function(arg1, arg2, arg3) {
+        if (typeof arg1 === 'function') {
+            return func((error, result) => {
+                return arg1(null, error || result);
+            });
+        }
+
+        if (typeof arg2 === 'function') {
+            return func(arg1, (error, result) => {
+                return arg2(null, error || result);
+            });
+        }
+
+        if (typeof arg3 === 'function') {
+            return func(arg1, arg2, (error, result) => {
+                return arg3(null, error || result);
+            });
+        }
+
+        throw new Exception('One of the first three arguments must be a callback function');
+    }
 }
