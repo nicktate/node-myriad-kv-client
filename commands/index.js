@@ -3,6 +3,7 @@
 module.exports = {
     get: require('./get'),
     delete: require('./delete'),
+    exists: require('./exists'),
     flush: require('./flush'),
     keys: require('./keys'),
     set: require('./set'),
