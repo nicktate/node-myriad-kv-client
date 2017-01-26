@@ -23,6 +23,7 @@ const COMMANDS = [
     'get ',
     'keys ',
     'set ',
+    'setnx ',
     'snapshot ',
     'stat ',
     'ttl '
@@ -67,6 +68,11 @@ function evalFunction(expression, context, filename, callback) {
             return errorWrap(mc.keys)(arg, callback);
         case 'set':
             return errorWrap(mc.set)({
+                key: arg,
+                value: split.length === 3 ? split[2] : null
+            }, callback);
+        case 'setnx':
+            return errorWrap(mc.setnx)({
                 key: arg,
                 value: split.length === 3 ? split[2] : null
             }, callback);
